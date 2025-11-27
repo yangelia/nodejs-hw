@@ -27,7 +27,6 @@ const noteSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-// TEXT INDEX for search
 noteSchema.index({ title: 'text', content: 'text' });
 
 export const Note = mongoose.model('Note', noteSchema);
