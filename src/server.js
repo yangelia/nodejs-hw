@@ -23,7 +23,7 @@ app.use(cors());
 app.use(express.json());
 
 // ROUTES
-app.use('/notes', notesRoutes);
+app.use(notesRoutes);
 
 // 404
 app.use(notFoundHandler);
