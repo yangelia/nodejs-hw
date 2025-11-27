@@ -10,19 +10,16 @@ export const authenticate = async (req, res, next) => {
       throw createHttpError(401, 'Missing access token');
     }
 
-    // Находим сессию
     const session = await Session.findOne({ accessToken });
 
     if (!session) {
       throw createHttpError(401, 'Session not found');
     }
 
-    // Проверяем срок действия
-    if (session.accessTokenValidUntil < new Date()) {
+    if (session.accessTokenValidUntil < Date.now()) {
       throw createHttpError(401, 'Access token expired');
     }
 
-    // Находим пользователя
     const user = await User.findById(session.userId);
 
     if (!user) {
