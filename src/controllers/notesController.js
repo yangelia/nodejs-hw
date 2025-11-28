@@ -1,108 +1,35 @@
-import { Note } from '../models/note.js';
-import createHttpError from 'http-errors';
+import { Router } from 'express';
+import { celebrate } from 'celebrate';
 
-export const getAllNotes = async (req, res, next) => {
-  try {
-    const { page = 1, perPage = 10, tag, search } = req.query;
-    const userId = req.user._id;
+import {
+  getAllNotes,
+  getNoteById,
+  createNote,
+  updateNote,
+  deleteNote,
+} from '../controllers/notesController.js';
 
-    const query = { userId };
+import {
+  getAllNotesSchema,
+  noteIdSchema,
+  createNoteSchema,
+  updateNoteSchema,
+} from '../validations/notesValidation.js';
 
-    if (tag) {
-      query.tag = tag;
-    }
+import { authenticate } from '../middleware/authenticate.js';
 
-    if (search) {
-      query.$text = { $search: search };
-    }
+const router = Router();
 
-    const pageNum = Number(page);
-    const perPageNum = Number(perPage);
-    const skip = (pageNum - 1) * perPageNum;
+router.use(authenticate);
 
-    const [notes, totalNotes] = await Promise.all([
-      Note.find(query).skip(skip).limit(perPageNum),
-      Note.countDocuments(query),
-    ]);
+router.get('/notes', celebrate(getAllNotesSchema), getAllNotes);
 
-    res.status(200).json({
-      page: pageNum,
-      perPage: perPageNum,
-      totalNotes,
-      totalPages: Math.ceil(totalNotes / perPageNum),
-      notes,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
+router.get('/notes/:noteId', celebrate(noteIdSchema), getNoteById);
 
-export const getNoteById = async (req, res, next) => {
-  try {
-    const { noteId } = req.params;
-    const userId = req.user._id;
+router.post('/notes', celebrate(createNoteSchema), createNote);
 
-    const note = await Note.findOne({ _id: noteId, userId });
+router.patch('/notes/:noteId', celebrate(updateNoteSchema), updateNote);
 
-    if (!note) {
-      throw createHttpError(404, 'Note not found');
-    }
+router.delete('/notes/:noteId', celebrate(noteIdSchema), deleteNote);
 
-    res.status(200).json(note);
-  } catch (err) {
-    next(err);
-  }
-};
-
-export const createNote = async (req, res, next) => {
-  try {
-    const userId = req.user._id;
-
-    const note = await Note.create({
-      ...req.body,
-      userId,
-    });
-
-    res.status(201).json(note);
-  } catch (err) {
-    next(err);
-  }
-};
-
-export const updateNote = async (req, res, next) => {
-  try {
-    const { noteId } = req.params;
-    const userId = req.user._id;
-
-    const updatedNote = await Note.findOneAndUpdate(
-      { _id: noteId, userId },
-      req.body,
-      { new: true },
-    );
-
-    if (!updatedNote) {
-      throw createHttpError(404, 'Note not found');
-    }
-
-    res.status(200).json(updatedNote);
-  } catch (err) {
-    next(err);
-  }
-};
-
-export const deleteNote = async (req, res, next) => {
-  try {
-    const { noteId } = req.params;
-    const userId = req.user._id;
-
-    const deletedNote = await Note.findOneAndDelete({ _id: noteId, userId });
-
-    if (!deletedNote) {
-      throw createHttpError(404, 'Note not found');
-    }
-
-    res.status(200).json(deletedNote);
-  } catch (err) {
-    next(err);
-  }
-};
+export default router;
