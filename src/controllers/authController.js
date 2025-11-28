@@ -1,10 +1,10 @@
 import bcrypt from 'bcrypt';
 import createHttpError from 'http-errors';
+
 import { User } from '../models/user.js';
 import { Session } from '../models/session.js';
 import { createSession, setSessionCookies } from '../services/auth.js';
 
-// REGISTER
 export const registerUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -22,7 +22,6 @@ export const registerUser = async (req, res, next) => {
     });
 
     const session = await createSession(user._id);
-
     setSessionCookies(res, session);
 
     res.status(201).json(user);
@@ -31,7 +30,6 @@ export const registerUser = async (req, res, next) => {
   }
 };
 
-// LOGIN
 export const loginUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -49,7 +47,6 @@ export const loginUser = async (req, res, next) => {
     await Session.deleteMany({ userId: user._id });
 
     const session = await createSession(user._id);
-
     setSessionCookies(res, session);
 
     res.status(200).json(user);
@@ -58,7 +55,6 @@ export const loginUser = async (req, res, next) => {
   }
 };
 
-// REFRESH
 export const refreshUserSession = async (req, res, next) => {
   try {
     const { sessionId, refreshToken } = req.cookies;
@@ -92,7 +88,6 @@ export const refreshUserSession = async (req, res, next) => {
   }
 };
 
-// LOGOUT
 export const logoutUser = async (req, res, next) => {
   try {
     const { sessionId } = req.cookies;

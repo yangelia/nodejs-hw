@@ -23,7 +23,6 @@ app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
-// Без префиксов
 app.use(authRoutes);
 app.use(notesRoutes);
 
