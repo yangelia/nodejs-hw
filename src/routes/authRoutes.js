@@ -19,7 +19,6 @@ import {
 
 const router = Router();
 
-// register
 router.post('/register', celebrate(registerUserSchema), registerUser);
 
 // login
