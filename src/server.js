@@ -15,29 +15,25 @@ import { errorHandler } from './middleware/errorHandler.js';
 import { errors } from 'celebrate';
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT ?? 3000;
 
 await connectMongoDB();
 
 app.use(logger);
-
-// Разрешаем фронту доступ к API
-app.use(
-  cors({
-    origin: true,
-    credentials: true,
-  }),
-);
-
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
-// Правильные префиксы для маршрутов
-app.use('/auth', authRoutes);
-app.use('/notes', notesRoutes);
-app.use('/users', userRoutes);
+// health-check / корневой маршрут
+app.get('/', (req, res) => {
+  res.json({ message: 'API is running' });
+});
 
-// обработчики ошибок
+//роуты API
+app.use(authRoutes);
+app.use(notesRoutes);
+app.use(userRoutes);
+
 app.use(notFoundHandler);
 app.use(errors());
 app.use(errorHandler);
