@@ -7,7 +7,6 @@ import { connectMongoDB } from './db/connectMongoDB.js';
 
 import authRoutes from './routes/authRoutes.js';
 import notesRoutes from './routes/notesRoutes.js';
-
 import userRoutes from './routes/userRoutes.js';
 
 import { logger } from './middleware/logger.js';
@@ -16,19 +15,29 @@ import { errorHandler } from './middleware/errorHandler.js';
 import { errors } from 'celebrate';
 
 const app = express();
-const PORT = process.env.PORT ?? 3000;
+const PORT = process.env.PORT || 3000;
 
 await connectMongoDB();
 
 app.use(logger);
-app.use(cors({ origin: true, credentials: true }));
+
+// Разрешаем фронту доступ к API
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+  }),
+);
+
 app.use(express.json());
 app.use(cookieParser());
 
-app.use(authRoutes);
-app.use(notesRoutes);
-app.use(userRoutes);
+// Правильные префиксы для маршрутов
+app.use('/auth', authRoutes);
+app.use('/notes', notesRoutes);
+app.use('/users', userRoutes);
 
+// обработчики ошибок
 app.use(notFoundHandler);
 app.use(errors());
 app.use(errorHandler);

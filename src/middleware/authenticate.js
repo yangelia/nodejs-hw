@@ -4,6 +4,10 @@ import { User } from '../models/user.js';
 
 export const authenticate = async (req, res, next) => {
   try {
+    if (req.path === '/' || req.path === '/favicon.ico') {
+      return next();
+    }
+
     const { accessToken } = req.cookies;
 
     if (!accessToken) {
@@ -23,7 +27,7 @@ export const authenticate = async (req, res, next) => {
     const user = await User.findById(session.userId);
 
     if (!user) {
-      throw createHttpError(401);
+      throw createHttpError(401, 'User not found');
     }
 
     req.user = user;
