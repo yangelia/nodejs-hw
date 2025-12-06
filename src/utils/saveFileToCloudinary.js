@@ -14,6 +14,9 @@ export function saveFileToCloudinary(buffer) {
       {
         folder: 'students-app/avatars',
         resource_type: 'image',
+        overwrite: true,
+        unique_filename: true,
+        use_filename: false,
       },
       (err, result) => (err ? reject(err) : resolve(result)),
     );
