@@ -1,10 +1,10 @@
-import { Note } from '../models/note.js';
 import createHttpError from 'http-errors';
+import { Note } from '../models/note.js';
 
 export const getAllNotes = async (req, res, next) => {
   try {
     const { page = 1, perPage = 10, tag, search } = req.query;
-    const userId = req.user._id;
+    const { _id: userId } = req.user;
 
     const query = { userId };
 
@@ -40,7 +40,7 @@ export const getAllNotes = async (req, res, next) => {
 export const getNoteById = async (req, res, next) => {
   try {
     const { noteId } = req.params;
-    const userId = req.user._id;
+    const { _id: userId } = req.user;
 
     const note = await Note.findOne({ _id: noteId, userId });
 
@@ -56,7 +56,7 @@ export const getNoteById = async (req, res, next) => {
 
 export const createNote = async (req, res, next) => {
   try {
-    const userId = req.user._id;
+    const { _id: userId } = req.user;
 
     const note = await Note.create({
       ...req.body,
@@ -72,7 +72,7 @@ export const createNote = async (req, res, next) => {
 export const updateNote = async (req, res, next) => {
   try {
     const { noteId } = req.params;
-    const userId = req.user._id;
+    const { _id: userId } = req.user;
 
     const updatedNote = await Note.findOneAndUpdate(
       { _id: noteId, userId },
@@ -93,7 +93,7 @@ export const updateNote = async (req, res, next) => {
 export const deleteNote = async (req, res, next) => {
   try {
     const { noteId } = req.params;
-    const userId = req.user._id;
+    const { _id: userId } = req.user;
 
     const deletedNote = await Note.findOneAndDelete({ _id: noteId, userId });
 

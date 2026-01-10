@@ -4,7 +4,11 @@ import { User } from '../models/user.js';
 
 export const authenticate = async (req, res, next) => {
   try {
-    const { accessToken } = req.cookies || {};
+    if (req.path === '/' || req.path === '/favicon.ico') {
+      return next();
+    }
+
+    const { accessToken } = req.cookies;
 
     if (!accessToken) {
       throw createHttpError(401, 'Missing access token');
@@ -16,18 +20,17 @@ export const authenticate = async (req, res, next) => {
       throw createHttpError(401, 'Session not found');
     }
 
-    if (session.accessTokenValidUntil < new Date()) {
+    if (session.accessTokenValidUntil < Date.now()) {
       throw createHttpError(401, 'Access token expired');
     }
 
     const user = await User.findById(session.userId);
 
     if (!user) {
-      throw createHttpError(401);
+      throw createHttpError(401, 'User not found');
     }
 
     req.user = user;
-
     next();
   } catch (err) {
     next(err);
