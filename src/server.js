@@ -1,67 +1,35 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import pino from 'pino-http';
-import helmet from 'helmet';
-import 'dotenv/config';
+import cookieParser from 'cookie-parser';
+
+import { connectMongoDB } from './db/connectMongoDB.js';
+
+import authRoutes from './routes/authRoutes.js';
+import notesRoutes from './routes/notesRoutes.js';
+
+import { logger } from './middleware/logger.js';
+import { notFoundHandler } from './middleware/notFoundHandler.js';
+import { errorHandler } from './middleware/errorHandler.js';
+import { errors } from 'celebrate';
 
 const app = express();
 const PORT = process.env.PORT ?? 3000;
 
-// ===== GLOBAL MIDDLEWARE =====
-app.use(helmet());
-app.use(cors());
+await connectMongoDB();
+
+app.use(logger);
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
+app.use(cookieParser());
 
-app.use(
-  pino({
-    transport: {
-      target: 'pino-pretty',
-      options: {
-        colorize: true,
-        translateTime: 'HH:MM:ss',
-        ignore: 'pid,hostname',
-      },
-    },
-  }),
-);
+app.use(authRoutes);
+app.use(notesRoutes);
 
-// ===== ROUTES =====
+app.use(notFoundHandler);
+app.use(errors());
+app.use(errorHandler);
 
-// Корень
-app.get('/', (req, res) => {
-  res.status(200).json({ message: 'Hello, World!' });
-});
-
-// GET /notes
-app.get('/notes', (req, res) => {
-  res.status(200).json({ message: 'Retrieved all notes' });
-});
-
-// GET /notes/:noteId
-app.get('/notes/:noteId', (req, res) => {
-  const { noteId } = req.params;
-  res.status(200).json({ message: `Retrieved note with ID: ${noteId}` });
-});
-
-// Тестовая ошибка
-app.get('/test-error', () => {
-  throw new Error('Simulated server error');
-});
-
-// ===== 404 middleware =====
-app.use((req, res) => {
-  res.status(404).json({ message: 'Route not found' });
-});
-
-// ===== ERROR HANDLER =====
-app.use((err, req, res, next) => {
-  console.error('Error:', err.message);
-  res.status(500).json({
-    message: err.message,
-  });
-});
-
-// ===== START SERVER =====
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
